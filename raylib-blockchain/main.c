@@ -10,7 +10,6 @@
 #define NONCE_SIZE 64
 #define NUM_THREADS 50
 
-// Shared data
 pthread_mutex_t mutex;
 int current_target_zeroes = 1;
 bool solution_found = false;
