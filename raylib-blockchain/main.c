@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <openssl/sha.h>
 #include "User.h"
-#include "SHA256.h"
+
 #define NONCE_SIZE 64
 #define NUM_THREADS 50
 
@@ -18,14 +19,20 @@ void* thread_solution(void* arg) {
     User* u = (User*)arg;
 
     char* user_string;
-    BYTE hash[SHA256_BLOCK_SIZE];
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+
+    // Timer variables specific to this thread
+    clock_t start_time, end_time;
+    start_time = clock(); // Start the timer when the thread starts
 
     while (current_target_zeroes <= 8) {
         pthread_mutex_lock(&mutex);
-        if (solution_found) {
-            // Reset for the next target zeroes search
+        if (solution_found && current_target_zeroes <= 8) {
+            // Prepare for the next target zeroes search
             current_target_zeroes++;
             solution_found = false;
+            // Restart the timer for the new target
+            start_time = clock();
         }
         if (current_target_zeroes > 8) {
             pthread_mutex_unlock(&mutex);
@@ -33,21 +40,26 @@ void* thread_solution(void* arg) {
         }
         pthread_mutex_unlock(&mutex);
 
-        // Generate random nonce and calculate the hash
+        // Generate random nonce and user string
         generate_random_nonce(u->nonce, NONCE_SIZE);
         user_string = user_to_string(*u);
 
+        // Compute SHA256 hash using OpenSSL
         SHA256_CTX ctx;
-        sha256_init(&ctx);
-        sha256_update(&ctx, (BYTE*)user_string, strlen(user_string));
-        sha256_final(&ctx, hash);
+        SHA256_Init(&ctx);
+        SHA256_Update(&ctx, (unsigned char*)user_string, strlen(user_string));
+        SHA256_Final(hash, &ctx);
+
         free(user_string);
 
-        // Check if the number of leading zeroes matches the current target
+        // Count leading zeroes in the hash
         int leading_zeroes = 0;
-        for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
-            if (ctx.data[i] == '0') {
-                leading_zeroes++;
+        for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+            if (hash[i] == 0x00) {
+                leading_zeroes += 2;  // Each byte has 2 hex digits
+            } else if ((hash[i] & 0xF0) == 0x00) {
+                leading_zeroes += 1;  // Only upper nibble is zero
+                break;
             } else {
                 break;
             }
@@ -57,10 +69,13 @@ void* thread_solution(void* arg) {
             pthread_mutex_lock(&mutex);
             if (!solution_found) {
                 solution_found = true;
-                printf("Thread %d found a hash with %d zeroes.\n", u->thread_id, current_target_zeroes);
+                end_time = clock(); // Stop the timer when a valid hash is found
+
+                double time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+                printf("Time taken by thread %d to find %d leading zeroes: %f seconds\n", u->thread_id, current_target_zeroes, time_taken);
                 printf("SHA256 Hash: ");
-                for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
-                    printf("%c", ctx.data[i]);
+                for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+                    printf("%02x", hash[i]);
                 }
                 printf("\n");
             }
@@ -69,7 +84,7 @@ void* thread_solution(void* arg) {
     }
 
     free_user(*u);
-    free(u);  // Free the allocated memory for the user object
+    free(u);
     return NULL;
 }
 
@@ -86,7 +101,6 @@ int main(void) {
 
     // Create and initialize users
     for (t = 0; t < NUM_THREADS; t++) {
-
         User* u = (User*)malloc(sizeof(User));
         if (u == NULL) {
             fprintf(stderr, "Failed to allocate memory for user.\n");
