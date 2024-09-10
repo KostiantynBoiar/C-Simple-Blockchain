@@ -1,4 +1,4 @@
-﻿#include "User.h"
+#include "User.h"
 #include "SHA256.h"
 
 const char* user_to_string(User u) {
@@ -65,7 +65,7 @@ char* solution(User u) {
 
         int leading_zeroes = 0;
         for (int i = 0; i < target_zeroes; i++) {
-            if (hash[i] == 0x0) {
+            if (ctx.data[i] == '0') {
                 leading_zeroes++;
             }
             else {
@@ -77,7 +77,7 @@ char* solution(User u) {
             printf("Hash with %d of zeroes has been found.\n", target_zeroes);
             printf("SHA256 Hash: ");
             for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
-                printf("%01x", hash[i]);
+                printf("%c", ctx.data[i]);
             }
             printf("\n");
             target_zeroes++;
