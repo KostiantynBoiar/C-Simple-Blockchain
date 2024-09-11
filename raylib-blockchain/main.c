@@ -9,7 +9,7 @@
 #include "raylib.h"
 
 #define NONCE_SIZE 64
-#define NUM_THREADS 50
+#define NUM_THREADS 85
 #define MAX_HASHES 1000  // Set an appropriate limit for the number of hashes
 
 typedef enum {MENU_MAIN, MENU_VIEW_HASHES, MENU_VIEW_GENERATING, MENU_VIEW_TIME_TAKEN} MenuState;
@@ -182,9 +182,6 @@ void draw_time_taken() {
     char time_info[256];
     snprintf(time_info, sizeof(time_info), "Raylib Window Elapsed Time: %f ticks", elapsed_time);
     DrawText(time_info, 10, 40, 20, RAYWHITE);
-
-    // Sort time_taken_array by time
-    qsort(time_taken_array, NUM_THREADS, sizeof(TimeTaken), compare_time_taken);
 
     // Draw time taken for each thread
     int y_position = 70;
