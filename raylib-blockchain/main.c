@@ -18,7 +18,8 @@ pthread_mutex_t mutex;
 int current_target_zeroes = 1;
 bool solution_found = false;
 
-// Arrays to store hashes and their positions
+static char buffer[NUM_THREADS * 256];
+static char hashHex[SHA256_DIGEST_LENGTH * 2 + 1];
 unsigned char hashes[MAX_HASHES][SHA256_DIGEST_LENGTH];
 int hash_count = 0;
 Vector2 hash_positions[MAX_HASHES];  // Store positions for each hash
@@ -149,29 +150,6 @@ void draw_hashes() {
     }
 }
 
-void draw_generating_hashes() {
-    // Clear background or previous menu content
-    ClearBackground(BLACK);
-
-    // Draw header for generating hashes
-    DrawText("Currently Generating Hashes:", 10, 10, 20, RAYWHITE);
-
-    // Draw information for each thread currently generating hashes
-    for (int i = 0; i < generating_hash_count; i++) {
-        char hash_string[SHA256_DIGEST_LENGTH * 2 + 1];
-        for (int j = 0; j < SHA256_DIGEST_LENGTH; j++) {
-            sprintf(&hash_string[j * 2], "%02x", generating_hashes[i].hash[j]);
-        }
-
-        // Format the text with thread number and hash
-        char display_text[256];
-        snprintf(display_text, sizeof(display_text), "Thread %d: Hash %s", generating_hashes[i].user->thread_id, hash_string);
-        
-        // Display the formatted text
-        DrawText(display_text, 10, 30 + i * 30, 20, RAYWHITE);
-    }
-}
-
 
 int compare_time_taken(const void* a, const void* b) {
     // Cast to appropriate type
@@ -277,13 +255,10 @@ int main(void) {
         // Display menu options
         if (menu_state == MENU_MAIN) {
             DrawText("Press 1 to view generated hashes", 10, 10, 20, RAYWHITE);
-            DrawText("Press 2 to view currently generating hashes", 10, 40, 20, RAYWHITE);
-            DrawText("Press 3 to view time taken", 10, 70, 20, RAYWHITE);
-            DrawText("Press 0 to hide current text", 10, 100, 20, RAYWHITE);
+            DrawText("Press 3 to view time taken", 10, 40, 20, RAYWHITE);
+            DrawText("Press 0 to hide current text", 10, 70, 20, RAYWHITE);
         } else if (menu_state == MENU_VIEW_HASHES) {
             draw_hashes();  // Draw all generated hashes
-        } else if (menu_state == MENU_VIEW_GENERATING) {
-            draw_generating_hashes();  // Draw currently generating hashes
         } else if (menu_state == MENU_VIEW_TIME_TAKEN) {
             draw_time_taken();  // Draw time taken by threads and elapsed time
         }
@@ -293,9 +268,6 @@ int main(void) {
         // Handle menu input
         if (IsKeyPressed(KEY_ONE)) {
             menu_state = MENU_VIEW_HASHES;
-        }
-        if (IsKeyPressed(KEY_TWO)) {
-            menu_state = MENU_VIEW_GENERATING;
         }
         if (IsKeyPressed(KEY_THREE)) {
             menu_state = MENU_VIEW_TIME_TAKEN;  // Show time taken menu
