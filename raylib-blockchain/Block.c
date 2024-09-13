@@ -68,3 +68,13 @@ void free_block(Block* b) {
     free(b->hash);
     free(b->privateKey);
 }
+
+void printBlock(const Block* block) {
+    printf("Block Number: %d\n", block->number);
+    printf("User: %s\n", user_to_string(block->blockchainUser));
+    printf("Hash: %s\n", block->hash);
+    printf("Private Key: %s\n", block->privateKey);
+    printf("Transaction Type: %s\n", transactionTypeToString(block->transactionT));
+    printf("Nonce: %s\n", block->nonce);
+    printf("-----------------------------\n");
+}

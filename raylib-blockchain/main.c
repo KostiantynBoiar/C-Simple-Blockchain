@@ -5,8 +5,10 @@
 #include <string.h>
 #include <time.h>
 #include <openssl/sha.h>
+#include "Block.h"
 #include "User.h"
 #include "raylib.h"
+#include "Blockchain.h"
 
 #define NONCE_SIZE 64
 #define NUM_THREADS 85
@@ -59,16 +61,16 @@ void* thread_solution(void* arg) {
 
     start_time = clock(); // Start the timer when the thread starts
 
-    while (current_target_zeroes <= 8) {
+    while (current_target_zeroes <= 9) {
         pthread_mutex_lock(&mutex);
-        if (solution_found && current_target_zeroes <= 8) {
+        if (solution_found && current_target_zeroes <= 9) {
             // Prepare for the next target zeroes search
             current_target_zeroes++;
             solution_found = false;
             // Restart the timer for the new target
             start_time = clock();
         }
-        if (current_target_zeroes > 8) {
+        if (current_target_zeroes > 9) {
             pthread_mutex_unlock(&mutex);
             break;
         }
@@ -201,6 +203,7 @@ void draw_time_taken() {
     }
 }
 
+/*
 int main(void) {
     pthread_t threads[NUM_THREADS];
     int rc;
@@ -284,6 +287,47 @@ int main(void) {
 
     // Destroy the mutex
     pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+*/
+
+
+int main() {
+    // Create a blockchain with capacity of 10 blocks
+    Blockchain* blockchain = createBlockchain(10);
+    
+    // Initialize users
+    User user1;
+    initialize_user(&user1, "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1");
+    
+    User user2;
+    initialize_user(&user2, "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2");
+
+//void initialize_block(Block* b, int number, const char* first, const char* second, const char* middle, const char* group, const char* course, const char* faculty, const char* university, const char* hash, const char* privateKey, transactionType type);
+
+    // Initialize and add the first block
+    Block block1;
+    initialize_block(&block1, 1, "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1", "hash1", "privateKey1", CreateCoin);
+    addBlock(blockchain, block1);
+
+    // Initialize and add the second block
+    Block block2;
+    initialize_block(&block2, 2, "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2", "hash2", "privateKey2", Pay);
+    addBlock(blockchain, block2);
+
+    // Print blockchain details
+    printf("Blockchain contains %d blocks:\n", blockchain->size);
+    for (int i = 0; i < blockchain->size; i++) {
+        printBlock(&blockchain->blocks[i]);
+    }
+
+    // Free resources
+    free_block(&block1);
+    free_block(&block2);
+    freeBlockchain(blockchain);
+    free_user(user1);
+    free_user(user2);
 
     return 0;
 }

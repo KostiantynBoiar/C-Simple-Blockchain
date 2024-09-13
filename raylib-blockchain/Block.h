@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum {
+typedef enum transactionType {
     CreateCoin,
     Pay
 } transactionType;
@@ -21,3 +21,6 @@ const char* transactionTypeToString(transactionType type);
 char* block_to_string(Block b);
 void initialize_block(Block* b, int number, const char* first, const char* second, const char* middle, const char* group, const char* course, const char* faculty, const char* university, const char* hash, const char* privateKey, transactionType type);
 void free_block(Block* b);
+void printBlock(const Block* block);
+
+// h1 => h1 + b2 => h2 + h3
