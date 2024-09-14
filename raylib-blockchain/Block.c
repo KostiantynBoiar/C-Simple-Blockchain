@@ -78,3 +78,13 @@ void printBlock(const Block* block) {
     printf("Nonce: %s\n", block->nonce);
     printf("-----------------------------\n");
 }
+
+char* generate_block_random_nonce(char* nonce, size_t length) {
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    for (size_t i = 0; i < length - 1; i++) {
+        int randomIndex = rand() % (sizeof(charset) - 1);
+        nonce[i] = charset[randomIndex];
+    }
+    nonce[length - 1] = '\0';  // Null-terminate the nonce
+    return nonce;
+}

@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -Wno-deprecated-declarations -O2
 LIBS = -lssl -lcrypto -lpthread -lGL -lm -ldl
 
 # Source files
-SRC = main.c User.c
+SRC = main.c User.c Block.c Blockchain.c
 
 # Output executable
 TARGET = openssl_sha256_program

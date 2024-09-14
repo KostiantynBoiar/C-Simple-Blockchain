@@ -293,6 +293,7 @@ int main(void) {
 */
 
 
+
 int main() {
     // Create a blockchain with capacity of 10 blocks
     Blockchain* blockchain = createBlockchain(10);
@@ -309,12 +310,13 @@ int main() {
     // Initialize and add the first block
     Block block1;
     initialize_block(&block1, 1, "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1", "hash1", "privateKey1", CreateCoin);
-    addBlock(blockchain, block1);
+    block1.hash = generate_block_random_nonce(block1.nonce, 32);
+    addBlock(blockchain, "block1");
 
     // Initialize and add the second block
     Block block2;
     initialize_block(&block2, 2, "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2", "hash2", "privateKey2", Pay);
-    addBlock(blockchain, block2);
+    addBlock(blockchain, "block2");
 
     // Print blockchain details
     printf("Blockchain contains %d blocks:\n", blockchain->size);
