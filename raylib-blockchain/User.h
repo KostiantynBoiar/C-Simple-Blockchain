@@ -20,4 +20,4 @@ typedef struct {
 void generate_random_nonce(char* nonce, size_t length);
 const char* user_to_string(User u);
 void initialize_user(User* u, const char* first, const char* second, const char* middle, const char* group, const char* course, const char* faculty, const char* university);
-void free_user(User u);
+void free_user(User *u);

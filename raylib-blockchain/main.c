@@ -14,6 +14,7 @@
 #define NUM_THREADS 85
 #define MAX_HASHES 1000  // Set an appropriate limit for the number of hashes
 
+/*
 typedef enum {MENU_MAIN, MENU_VIEW_HASHES, MENU_VIEW_GENERATING, MENU_VIEW_TIME_TAKEN} MenuState;
 
 pthread_mutex_t mutex;
@@ -202,7 +203,7 @@ void draw_time_taken() {
         }
     }
 }
-
+*/
 /*
 int main(void) {
     pthread_t threads[NUM_THREADS];
@@ -292,31 +293,59 @@ int main(void) {
 }
 */
 
+// Assume Block, Blockchain, User, and other related functions are already defined.
 
-
-int main() {
-    // Create a blockchain with capacity of 10 blocks
+void solution() {
+    // Initialize blockchain with capacity for 10 blocks
     Blockchain* blockchain = createBlockchain(10);
-    
-    // Initialize users
-    User user1;
-    initialize_user(&user1, "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1");
-    
-    User user2;
-    initialize_user(&user2, "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2");
 
-//void initialize_block(Block* b, int number, const char* first, const char* second, const char* middle, const char* group, const char* course, const char* faculty, const char* university, const char* hash, const char* privateKey, transactionType type);
+    // Initialize 10 users
+    User users[10];
+    initialize_user(&users[0], "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1");
+    initialize_user(&users[1], "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2");
+    initialize_user(&users[2], "Alice", "Smith", "C", "Group3", "Course3", "Faculty3", "University3");
+    initialize_user(&users[3], "Bob", "Johnson", "D", "Group4", "Course4", "Faculty4", "University4");
+    initialize_user(&users[4], "Charlie", "Brown", "E", "Group5", "Course5", "Faculty5", "University5");
+    initialize_user(&users[5], "Eve", "Adams", "F", "Group6", "Course6", "Faculty6", "University6");
+    initialize_user(&users[6], "Frank", "Miller", "G", "Group7", "Course7", "Faculty7", "University7");
+    initialize_user(&users[7], "Grace", "Lee", "H", "Group8", "Course8", "Faculty8", "University8");
+    initialize_user(&users[8], "Henry", "White", "I", "Group9", "Course9", "Faculty9", "University9");
+    initialize_user(&users[9], "Ivy", "Williams", "J", "Group10", "Course10", "Faculty10", "University10");
 
-    // Initialize and add the first block
-    Block block1;
-    initialize_block(&block1, 1, "John", "Doe", "A", "Group1", "Course1", "Faculty1", "University1", "hash1", "privateKey1", CreateCoin);
-    block1.hash = generate_block_random_nonce(block1.nonce, 32);
-    addBlock(blockchain, "block1");
+    // Initialize 10 blocks
+    Block blocks[10];
+    char* prev_hash = NULL;  // To store the previous block's hash
 
-    // Initialize and add the second block
-    Block block2;
-    initialize_block(&block2, 2, "Jane", "Doe", "B", "Group2", "Course2", "Faculty2", "University2", "hash2", "privateKey2", Pay);
-    addBlock(blockchain, "block2");
+    for (int i = 0; i < 10; i++) {
+        // Convert user to string
+        char user_str[256];
+        sprintf(user_str, "%s %s %s %s %s %s %s", 
+                users[i].firstName, users[i].secondName, users[i].middleName,
+                users[i].groupName, users[i].course, users[i].faculty, users[i].universityName);
+
+        char block_hash_input[512];
+
+        // For the first block, hash is based on the user string alone
+        if (i == 0) {
+            strcpy(block_hash_input, user_str);
+        } else {
+            // For other blocks, hash is based on the previous hash + user string
+            snprintf(block_hash_input, sizeof(block_hash_input), "%s%s", prev_hash, user_str);
+        }
+
+        // Generate hash (this assumes you have a hash generation function)
+        char* block_hash = generate_block_random_nonce(block_hash_input, 32);
+
+        // Initialize the block
+        initialize_block(&blocks[i], i + 1, users[i].firstName, users[i].secondName, users[i].middleName,
+                users[i].groupName, users[i].course, users[i].faculty, users[i].universityName, block_hash, "privateKey", CreateCoin);
+
+        // Add block to the blockchain
+        addBlock(blockchain, blocks[i], block_hash);
+
+        // Store the current block's hash as previous hash for the next block
+        prev_hash = block_hash;
+    }
 
     // Print blockchain details
     printf("Blockchain contains %d blocks:\n", blockchain->size);
@@ -325,11 +354,15 @@ int main() {
     }
 
     // Free resources
-    free_block(&block1);
-    free_block(&block2);
+    for (int i = 0; i < 10; i++) {
+        free_block(&blocks[i]);
+        free_user(&users[i]); 
+    }
     freeBlockchain(blockchain);
-    free_user(user1);
-    free_user(user2);
+}
 
+int main() {
+    solution();
     return 0;
 }
+

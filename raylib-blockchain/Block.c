@@ -63,7 +63,7 @@ char* block_to_string(Block b) {
 }
 
 void free_block(Block* b) {
-    free_user(b->blockchainUser);
+    free_user(&b->blockchainUser);
 
     free(b->hash);
     free(b->privateKey);

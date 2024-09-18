@@ -72,12 +72,12 @@ void initialize_user(User* u, const char* first, const char* second, const char*
 }
 
 // Function to free the dynamically allocated memory in the User struct
-void free_user(User u) {
-    free(u.firstName);
-    free(u.secondName);
-    free(u.middleName);
-    free(u.groupName);
-    free(u.course);
-    free(u.faculty);
-    free(u.universityName);
+void free_user(User *u) {
+    free(&u->firstName);
+    free(&u->secondName);
+    free(&u->middleName);
+    free(&u->groupName);
+    free(&u->course);
+    free(&u->faculty);
+    free(&u->universityName);
 }
