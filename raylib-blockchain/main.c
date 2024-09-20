@@ -334,8 +334,8 @@ void solution() {
         }
 
         // Generate hash (this assumes you have a hash generation function)
-        char* block_hash = generate_block_random_nonce(block_hash_input, 32);
-
+        generate_block_random_nonce(&blocks[i]);
+        char* block_hash = "    asdasdasdas d";
         // Initialize the block
         initialize_block(&blocks[i], i + 1, users[i].firstName, users[i].secondName, users[i].middleName,
                 users[i].groupName, users[i].course, users[i].faculty, users[i].universityName, block_hash, "privateKey", CreateCoin);

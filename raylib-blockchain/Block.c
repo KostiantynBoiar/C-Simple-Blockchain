@@ -79,12 +79,16 @@ void printBlock(const Block* block) {
     printf("-----------------------------\n");
 }
 
-char* generate_block_random_nonce(char* nonce, size_t length) {
+void generate_block_random_nonce(Block* block) {
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    
+    // Ensure length doesn't exceed the fixed size of the nonce array
+    size_t length = sizeof(block->nonce);
+
     for (size_t i = 0; i < length - 1; i++) {
         int randomIndex = rand() % (sizeof(charset) - 1);
-        nonce[i] = charset[randomIndex];
+        block->nonce[i] = charset[randomIndex];
     }
-    nonce[length - 1] = '\0';  // Null-terminate the nonce
-    return nonce;
+    
+    block->nonce[length - 1] = '\0';  // Null-terminate the nonce
 }
