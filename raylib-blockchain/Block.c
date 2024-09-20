@@ -26,40 +26,38 @@ const char* transactionTypeToString(transactionType type) {
 }
 
 char* block_to_string(Block b) {
-    // Get the user string representation
-    const char* userString = user_to_string(b.blockchainUser);
-
-    if (!userString) {
-        return NULL;  // Handle failure in user_to_string
+    // We will combine the user string and block fields into a single string
+    char* user_str = (char*)user_to_string(b.blockchainUser); // Convert User to string
+    const char* transaction_type_str = transactionTypeToString(b.transactionT); // Get transaction type string
+    
+    // Calculate the buffer size (tweak this size if necessary)
+    size_t buffer_size = strlen(user_str) + strlen(b.hash) + strlen(b.privateKey) + strlen(transaction_type_str) + strlen(b.nonce) + 256;
+    
+    // Allocate memory for the final string
+    char* result = (char*)malloc(buffer_size);
+    if (result == NULL) {
+        return NULL; // Memory allocation failed
     }
-
-    // Allocate memory for the block string representation
-    // Adjust size based on the expected length of the fields
-    char* result = (char*)malloc(2048);  // Adjust size as needed
-
-    if (!result) {
-        free((void*)userString);  // Free user string memory on failure
-        return NULL;  // Handle memory allocation failure
-    }
-
-    snprintf(result, 2048,
-        "Block Number: %d\n"
-        "User Details:\n%s"
-        "Hash: %s\n"
-        "Private Key: %s\n"
-        "Transaction Type: %s\n"
-        "Nonce: %s\n",
-        b.number,
-        userString,
-        b.hash ? b.hash : "N/A",
-        b.privateKey ? b.privateKey : "N/A",
-        transactionTypeToString(b.transactionT),
-        b.nonce);
-
-    // Free the user string memory
-    free((void*)userString);
-
-    return result;
+    
+    // Format the Block fields into a string
+    snprintf(result, buffer_size, 
+             "Block Number: %d\n"
+             "User Info: %s\n"
+             "Hash: %s\n"
+             "Private Key: %s\n"
+             "Transaction Type: %s\n"
+             "Nonce: %s\n", 
+             b.number, 
+             user_str, 
+             b.hash, 
+             b.privateKey, 
+             transaction_type_str, 
+             b.nonce);
+    
+    // Free the user string as it was dynamically allocated
+    free(user_str);
+    
+    return result; // Caller is responsible for freeing this memory
 }
 
 void free_block(Block* b) {

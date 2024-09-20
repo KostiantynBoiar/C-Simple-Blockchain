@@ -293,7 +293,14 @@ int main(void) {
 }
 */
 
-// Assume Block, Blockchain, User, and other related functions are already defined.
+#define LEADING_ZEROES "000000"
+
+void hash_to_hex(unsigned char* hash, char* outputBuffer) {
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+    }
+    outputBuffer[SHA256_DIGEST_LENGTH * 2] = '\0';  // Null-terminate the string
+}
 
 void solution() {
     // Initialize blockchain with capacity for 10 blocks
@@ -314,7 +321,8 @@ void solution() {
 
     // Initialize 10 blocks
     Block blocks[10];
-    char* prev_hash = NULL;  // To store the previous block's hash
+    char prev_hash[SHA256_DIGEST_LENGTH * 2 + 1] = {0};  // Hex string for previous hash
+    char block_hash_input[1024];  // Buffer for the hash input (previous hash + user string)
 
     for (int i = 0; i < 10; i++) {
         // Convert user to string
@@ -323,7 +331,9 @@ void solution() {
                 users[i].firstName, users[i].secondName, users[i].middleName,
                 users[i].groupName, users[i].course, users[i].faculty, users[i].universityName);
 
-        char block_hash_input[512];
+        generate_block_random_nonce(&blocks[i]);
+
+        unsigned char block_hash[SHA256_DIGEST_LENGTH];
 
         // For the first block, hash is based on the user string alone
         if (i == 0) {
@@ -333,18 +343,39 @@ void solution() {
             snprintf(block_hash_input, sizeof(block_hash_input), "%s%s", prev_hash, user_str);
         }
 
-        // Generate hash (this assumes you have a hash generation function)
-        generate_block_random_nonce(&blocks[i]);
-        char* block_hash = "    asdasdasdas d";
-        // Initialize the block
+        // Initialize the block (passing a dummy privateKey and transactionType)
         initialize_block(&blocks[i], i + 1, users[i].firstName, users[i].secondName, users[i].middleName,
-                users[i].groupName, users[i].course, users[i].faculty, users[i].universityName, block_hash, "privateKey", CreateCoin);
+                         users[i].groupName, users[i].course, users[i].faculty, users[i].universityName, 
+                         block_hash, "privateKey", CreateCoin);
+
+        // Convert block to string for hashing
+        char* string_of_the_block = block_to_string(blocks[i]);
+        if (string_of_the_block == NULL) {
+            fprintf(stderr, "Error converting block to string\n");
+            return;
+        }
+
+        // Generate SHA-256 hash of the block string
+        SHA256_CTX ctx;
+        SHA256_Init(&ctx);
+        SHA256_Update(&ctx, (unsigned char*)string_of_the_block, strlen(string_of_the_block));
+        SHA256_Final(block_hash, &ctx);
+
+        // Free the block string after it's no longer needed
+        free(string_of_the_block);
+
+        // Convert the binary block hash to a hex string
+        char hex_hash[SHA256_DIGEST_LENGTH * 2 + 1];
+        hash_to_hex(block_hash, hex_hash);
+
+        // Store the hex string hash in the block
+        blocks[i].hash = strdup(hex_hash);  // Ensure to free later
 
         // Add block to the blockchain
-        addBlock(blockchain, blocks[i], block_hash);
+        addBlock(blockchain, blocks[i], hex_hash);
 
         // Store the current block's hash as previous hash for the next block
-        prev_hash = block_hash;
+        strcpy(prev_hash, hex_hash);
     }
 
     // Print blockchain details
@@ -355,11 +386,13 @@ void solution() {
 
     // Free resources
     for (int i = 0; i < 10; i++) {
-        free_block(&blocks[i]);
+        free_block(&blocks[i]);  // Ensure that hash and other dynamic memory are freed properly
         free_user(&users[i]); 
     }
+    
     freeBlockchain(blockchain);
 }
+
 
 int main() {
     solution();
